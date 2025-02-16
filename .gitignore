@@ -1,0 +1,67 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Odoo logs, PID, dan file sementara
+*.log
+*.pid
+*.pid.lock
+
+# File konfigurasi Odoo (jika tidak ingin dilacak)
+odoo.conf
+openerp-server.conf
+
+# Direktori filestore (tempat penyimpanan file binary Odoo)
+filestore/
+
+# File basis data (SQLite, dsb.)
+*.sqlite
+*.sqlite3
+
+# Virtual environment
+.env/
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+
+# Editor dan IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Sistem operasi
+.DS_Store
+Thumbs.db
+
+# Backup & file sementara editor
+*.bak
+*.swp
+*.swo
+*.tmp
+
+# Testing & coverage reports
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+.pytest_cache/
+nosetests.xml
+coverage.xml
+
+# File build/artifak lainnya
+*.manifest
+
+# File template Odoo (.pot) jika tidak ingin dilacak
+*.pot
+
