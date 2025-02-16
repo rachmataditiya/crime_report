@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Kategori Utama -->
+        <record id="kategori_penipuan" model="laporan.kategori">
+            <field name="nama">Penipuan</field>
+            <field name="keterangan">Penipuan dan aktivitas mencurigakan</field>
+        </record>
+
+        <record id="kategori_pelecehan" model="laporan.kategori">
+            <field name="nama">Pelecehan</field>
+            <field name="keterangan">Pelecehan dan perilaku tidak pantas</field>
+        </record>
+
+        <record id="kategori_hoax" model="laporan.kategori">
+            <field name="nama">Hoax</field>
+            <field name="keterangan">Berita palsu dan informasi menyesatkan</field>
+        </record>
+
+        <!-- Sub Kategori Penipuan -->
+        <record id="kategori_penipuan_online_shop" model="laporan.kategori">
+            <field name="nama">Penipuan Online Shop</field>
+            <field name="parent_id" ref="kategori_penipuan"/>
+            <field name="keterangan">Penipuan terkait jual beli online</field>
+        </record>
+
+        <record id="kategori_penipuan_investasi" model="laporan.kategori">
+            <field name="nama">Penipuan Investasi</field>
+            <field name="parent_id" ref="kategori_penipuan"/>
+            <field name="keterangan">Penipuan terkait investasi dan money game</field>
+        </record>
+
+        <!-- Sub Kategori Pelecehan -->
+        <record id="kategori_pelecehan_verbal" model="laporan.kategori">
+            <field name="nama">Pelecehan Verbal</field>
+            <field name="parent_id" ref="kategori_pelecehan"/>
+            <field name="keterangan">Pelecehan melalui kata-kata dan komentar</field>
+        </record>
+
+        <record id="kategori_pelecehan_visual" model="laporan.kategori">
+            <field name="nama">Pelecehan Visual</field>
+            <field name="parent_id" ref="kategori_pelecehan"/>
+            <field name="keterangan">Pelecehan melalui gambar dan video</field>
+        </record>
+
+        <!-- Sub Kategori Hoax -->
+        <record id="kategori_hoax_kesehatan" model="laporan.kategori">
+            <field name="nama">Hoax Kesehatan</field>
+            <field name="parent_id" ref="kategori_hoax"/>
+            <field name="keterangan">Informasi palsu terkait kesehatan</field>
+        </record>
+
+        <record id="kategori_hoax_politik" model="laporan.kategori">
+            <field name="nama">Hoax Politik</field>
+            <field name="parent_id" ref="kategori_hoax"/>
+            <field name="keterangan">Informasi palsu terkait politik</field>
+        </record>
+    </data>
+</odoo>

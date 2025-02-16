@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="group_peninjau" model="res.groups">
+        <field name="name">Peninjau Laporan</field>
+        <field name="category_id" ref="base.module_category_services"/>
+        <field name="comment">Grup untuk peninjau yang dapat memvalidasi laporan</field>
+    </record>
+
+    <record id="group_admin" model="res.groups">
+        <field name="name">Admin Laporan</field>
+        <field name="category_id" ref="base.module_category_services"/>
+        <field name="comment">Grup admin yang memiliki akses penuh ke laporan</field>
+        <field name="implied_ids" eval="[(4, ref('group_peninjau'))]"/>
+    </record>
+</odoo>

@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Form View -->
+    <record id="laporan_penilaian_view_form" model="ir.ui.view">
+        <field name="name">laporan.penilaian.form</field>
+        <field name="model">laporan.penilaian</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" type="object" name="toggle_active" icon="fa-archive">
+                            <field name="active" widget="boolean_button" options="{&quot;terminology&quot;: &quot;archive&quot;}"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="nama" placeholder="Nama Aturan..."/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="tipe"/>
+                            <field name="sequence"/>
+                            <field name="bobot"/>
+                        </group>
+                        <group>
+                            <field name="minimal"/>
+                            <field name="maksimal"/>
+                            <field name="date_start"/>
+                            <field name="date_end"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <!-- Atribut 'attrs' telah dihapus. 
+                             Jika diperlukan logika dinamis untuk menyembunyikan halaman, implementasikan di model. -->
+                        <page string="Formula" name="formula">
+                            <group>
+                                <field name="formula" nolabel="1" placeholder="Masukkan formula Python..."/>
+                            </group>
+                        </page>
+                        <page string="Tag Terkait" name="tags">
+                            <field name="tag_ids">
+                                <list>
+                                    <field name="nama"/>
+                                    <field name="kategori_id"/>
+                                    <field name="bobot"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Kategori" name="categories">
+                            <field name="kategori_ids">
+                                <list>
+                                    <field name="nama"/>
+                                    <field name="total_laporan_count"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Keterangan" name="description">
+                            <field name="keterangan"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- List View -->
+    <record id="laporan_penilaian_view_list" model="ir.ui.view">
+        <field name="name">laporan.penilaian.list</field>
+        <field name="model">laporan.penilaian</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="nama"/>
+                <field name="tipe"/>
+                <field name="bobot"/>
+                <field name="minimal"/>
+                <field name="maksimal"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="active" invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="laporan_penilaian_view_search" model="ir.ui.view">
+        <field name="name">laporan.penilaian.search</field>
+        <field name="model">laporan.penilaian</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="nama"/>
+                <field name="keterangan"/>
+                <field name="formula"/>
+                <separator/>
+                <filter string="Aktif" name="active" domain="[('active','=',True)]"/>
+                <filter string="Arsip" name="inactive" domain="[('active','=',False)]"/>
+                <separator/>
+                <filter string="Berlaku Hari Ini" name="valid_today" domain="['|',('date_end','>=',context_today()),('date_end','=',False)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Tipe" name="groupby_type" context="{'group_by': 'tipe'}"/>
+                    <filter string="Bobot" name="groupby_weight" context="{'group_by': 'bobot'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_laporan_penilaian" model="ir.actions.act_window">
+        <field name="name">Aturan Penilaian</field>
+        <field name="res_model">laporan.penilaian</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Belum ada aturan penilaian
+            </p>
+            <p>
+                Klik tombol create untuk membuat aturan penilaian baru
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_laporan_penilaian"
+              name="Aturan Penilaian"
+              parent="menu_laporan_facebook_root"
+              action="action_laporan_penilaian"
+              sequence="50"/>
+</odoo>

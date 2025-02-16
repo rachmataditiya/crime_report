@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Aturan Penilaian Bukti -->
+        <record id="penilaian_jumlah_bukti" model="laporan.penilaian">
+            <field name="nama">Jumlah Bukti</field>
+            <field name="tipe">bukti</field>
+            <field name="bobot">1.0</field>
+            <field name="keterangan">Penilaian berdasarkan jumlah bukti yang dilampirkan</field>
+        </record>
+
+        <!-- Aturan Penilaian Waktu -->
+        <record id="penilaian_waktu_lapor" model="laporan.penilaian">
+            <field name="nama">Waktu Pelaporan</field>
+            <field name="tipe">waktu</field>
+            <field name="bobot">0.8</field>
+            <field name="keterangan">Penilaian berdasarkan kecepatan pelaporan</field>
+        </record>
+
+        <!-- Aturan Penilaian Tag -->
+        <record id="penilaian_tag_penipuan" model="laporan.penilaian">
+            <field name="nama">Tag Penipuan</field>
+            <field name="tipe">tag</field>
+            <field name="bobot">1.2</field>
+            <field name="keterangan">Penilaian khusus untuk tag terkait penipuan</field>
+        </record>
+
+        <!-- Aturan Penilaian Kombinasi -->
+        <record id="penilaian_kombinasi_umum" model="laporan.penilaian">
+            <field name="nama">Penilaian Kombinasi</field>
+            <field name="tipe">kombinasi</field>
+            <field name="bobot">1.0</field>
+            <field name="keterangan">Penilaian gabungan dari berbagai faktor</field>
+        </record>
+
+        <!-- Aturan Penilaian Custom -->
+        <record id="penilaian_custom_kompleks" model="laporan.penilaian">
+            <field name="nama">Penilaian Kompleks</field>
+            <field name="tipe">custom</field>
+            <field name="bobot">1.5</field>
+            <field name="formula">len(laporan.bukti_ids) * 10 + len(laporan.tag_ids) * 5</field>
+            <field name="keterangan">Penilaian kompleks dengan formula kustom</field>
+        </record>
+    </data>
+</odoo>

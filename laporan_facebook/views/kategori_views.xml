@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Form View -->
+    <record id="laporan_kategori_view_form" model="ir.ui.view">
+        <field name="name">laporan.kategori.form</field>
+        <field name="model">laporan.kategori</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" type="object" 
+                                name="toggle_active" icon="fa-archive">
+                            <field name="active" widget="boolean_button" 
+                                   options="{&quot;terminology&quot;: &quot;archive&quot;}"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="nama" placeholder="Nama Kategori..."/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="parent_id"/>
+                            <field name="sequence"/>
+                            <field name="level"/>
+                        </group>
+                        <group>
+                            <field name="total_laporan_count"/>
+                            <field name="complete_path"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Tag" name="tags">
+                            <field name="tag_ids">
+                                <list>
+                                    <field name="nama"/>
+                                    <field name="bobot"/>
+                                    <field name="laporan_count"/>
+                                    <field name="active"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Sub Kategori" name="children">
+                            <field name="child_ids">
+                                <list>
+                                    <field name="nama"/>
+                                    <field name="total_laporan_count"/>
+                                    <field name="level"/>
+                                    <field name="active"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Keterangan" name="description">
+                            <field name="keterangan"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- List View -->
+    <record id="laporan_kategori_view_list" model="ir.ui.view">
+        <field name="name">laporan.kategori.list</field>
+        <field name="model">laporan.kategori</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="nama"/>
+                <field name="parent_id"/>
+                <field name="level"/>
+                <field name="total_laporan_count"/>
+                <field name="tag_ids" widget="many2many_tags"/>
+                <field name="active" invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="laporan_kategori_view_search" model="ir.ui.view">
+        <field name="name">laporan.kategori.search</field>
+        <field name="model">laporan.kategori</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="nama"/>
+                <field name="parent_id"/>
+                <field name="keterangan"/>
+                <separator/>
+                <filter string="Kategori Induk" name="parent_only" 
+                        domain="[('parent_id','=',False)]"/>
+                <filter string="Aktif" name="active" domain="[('active','=',True)]"/>
+                <filter string="Arsip" name="inactive" domain="[('active','=',False)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Kategori Induk" name="groupby_parent" 
+                            context="{'group_by': 'parent_id'}"/>
+                    <filter string="Level" name="groupby_level" 
+                            context="{'group_by': 'level'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_laporan_kategori" model="ir.actions.act_window">
+        <field name="name">Kategori</field>
+        <field name="res_model">laporan.kategori</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Belum ada kategori
+            </p>
+            <p>
+                Klik tombol create untuk membuat kategori baru
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_laporan_kategori"
+              name="Kategori"
+              parent="menu_laporan_facebook_root"
+              action="action_laporan_kategori"
+              sequence="30"/>
+</odoo>

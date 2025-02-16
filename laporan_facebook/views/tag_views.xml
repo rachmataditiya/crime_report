@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Form View -->
+    <record id="laporan_tag_view_form" model="ir.ui.view">
+        <field name="name">laporan.tag.form</field>
+        <field name="model">laporan.tag</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" type="object" 
+                                name="toggle_active" icon="fa-archive">
+                            <field name="active" widget="boolean_button" 
+                                   options="{&quot;terminology&quot;: &quot;archive&quot;}"/>
+                        </button>
+                        <button name="action_view_laporan" type="object" 
+                                class="oe_stat_button" icon="fa-file-text">
+                            <field string="Laporan" name="laporan_count" widget="statinfo"/>
+                        </button>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="nama"/>
+                            <field name="kategori_id"/>
+                            <field name="sequence"/>
+                        </group>
+                        <group>
+                            <field name="bobot"/>
+                            <field name="warna" widget="color_picker"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Keterangan" name="description">
+                            <field name="keterangan"/>
+                        </page>
+                        <page string="Laporan" name="reports">
+                            <field name="laporan_ids" readonly="1">
+                                <list>
+                                    <field name="kode_laporan"/>
+                                    <field name="tanggal_lapor"/>
+                                    <field name="pelaku_id"/>
+                                    <field name="status"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- List View -->
+    <record id="laporan_tag_view_list" model="ir.ui.view">
+        <field name="name">laporan.tag.list</field>
+        <field name="model">laporan.tag</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="nama"/>
+                <field name="kategori_id"/>
+                <field name="bobot"/>
+                <field name="laporan_count"/>
+                <field name="warna" widget="color"/>
+                <field name="active" invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="laporan_tag_view_search" model="ir.ui.view">
+        <field name="name">laporan.tag.search</field>
+        <field name="model">laporan.tag</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="nama"/>
+                <field name="kategori_id"/>
+                <field name="keterangan"/>
+                <separator/>
+                <filter string="Aktif" name="active" domain="[('active','=',True)]"/>
+                <filter string="Arsip" name="inactive" domain="[('active','=',False)]"/>
+                <separator/>
+                <filter string="Digunakan" name="used" domain="[('laporan_count','>', 0)]"/>
+                <filter string="Tidak Digunakan" name="unused" domain="[('laporan_count','=', 0)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Kategori" name="groupby_kategori" 
+                            context="{'group_by': 'kategori_id'}"/>
+                    <filter string="Bobot" name="groupby_bobot" 
+                            context="{'group_by': 'bobot'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_laporan_tag" model="ir.actions.act_window">
+        <field name="name">Tag</field>
+        <field name="res_model">laporan.tag</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="context">{'search_default_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Belum ada tag
+            </p>
+            <p>
+                Klik tombol create untuk membuat tag baru
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_laporan_tag"
+              name="Tag"
+              parent="menu_laporan_facebook_root"
+              action="action_laporan_tag"
+              sequence="40"/>
+</odoo>

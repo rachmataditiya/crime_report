@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Form View -->
+    <record id="laporan_riwayat_view_form" model="ir.ui.view">
+        <field name="name">laporan.riwayat.form</field>
+        <field name="model">laporan.riwayat</field>
+        <field name="arch" type="xml">
+            <form create="false" edit="false">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_lihat_laporan" type="object" 
+                                class="oe_stat_button" icon="fa-file-text"
+                                string="Lihat Laporan"/>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="kode_riwayat"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="laporan_id"/>
+                            <field name="waktu"/>
+                            <field name="aksi"/>
+                        </group>
+                        <group>
+                            <field name="pengguna_id"/>
+                            <field name="status_laporan"/>
+                            <field name="bukti_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Perubahan" name="changes">
+                            <group>
+                                <field name="perubahan_ringkas"/>
+                                <field name="keterangan"/>
+                            </group>
+                            <group>
+                                <group string="Data Sebelum">
+                                    <field name="nilai_lama" widget="json_view"/>
+                                </group>
+                                <group string="Data Setelah">
+                                    <field name="nilai_baru" widget="json_view"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- List View -->
+    <record id="laporan_riwayat_view_list" model="ir.ui.view">
+        <field name="name">laporan.riwayat.list</field>
+        <field name="model">laporan.riwayat</field>
+        <field name="arch" type="xml">
+            <list create="false" edit="false" delete="false">
+                <field name="kode_riwayat"/>
+                <field name="laporan_id"/>
+                <field name="waktu"/>
+                <field name="aksi" decoration-info="aksi in ['create','write']"
+                       decoration-success="aksi in ['validate','submit']"
+                       decoration-warning="aksi == 'need_info'"
+                       decoration-danger="aksi in ['reject','unlink']"/>
+                <field name="pengguna_id"/>
+                <field name="perubahan_ringkas"/>
+                <button name="action_lihat_laporan" type="object" 
+                        string="Lihat Laporan" icon="fa-external-link"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="laporan_riwayat_view_search" model="ir.ui.view">
+        <field name="name">laporan.riwayat.search</field>
+        <field name="model">laporan.riwayat</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="kode_riwayat"/>
+                <field name="laporan_id"/>
+                <field name="pengguna_id"/>
+                <field name="keterangan"/>
+                <separator/>
+                <filter string="Pembuatan" name="create" domain="[('aksi','=','create')]"/>
+                <filter string="Perubahan" name="write" domain="[('aksi','=','write')]"/>
+                <filter string="Validasi" name="validate" domain="[('aksi','=','validate')]"/>
+                <filter string="Penolakan" name="reject" domain="[('aksi','=','reject')]"/>
+                <filter string="Penghapusan" name="unlink" domain="[('aksi','=','unlink')]"/>
+                <separator/>
+                <filter string="Hari Ini" name="today" 
+                        domain="[('waktu','&gt;=',context_today().strftime('%Y-%m-%d'))]"/>
+                <filter string="Minggu Ini" name="week" 
+                        domain="[('waktu','&gt;=',(context_today()+relativedelta(weeks=-1)).strftime('%Y-%m-%d'))]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Laporan" name="groupby_laporan" 
+                            context="{'group_by': 'laporan_id'}"/>
+                    <filter string="Aksi" name="groupby_action" 
+                            context="{'group_by': 'aksi'}"/>
+                    <filter string="Pengguna" name="groupby_user" 
+                            context="{'group_by': 'pengguna_id'}"/>
+                    <filter string="Tanggal" name="groupby_date" 
+                            context="{'group_by': 'waktu:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_laporan_riwayat" model="ir.actions.act_window">
+        <field name="name">Riwayat Perubahan</field>
+        <field name="res_model">laporan.riwayat</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_week': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Belum ada riwayat perubahan
+            </p>
+            <p>
+                Riwayat akan tercatat secara otomatis saat ada perubahan pada laporan
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_laporan_riwayat"
+              name="Riwayat"
+              parent="menu_laporan_facebook_root"
+              action="action_laporan_riwayat"
+              sequence="60"/>
+</odoo>

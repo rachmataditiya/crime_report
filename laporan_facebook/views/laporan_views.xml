@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <!-- Form View -->
+  <record id="laporan_facebook_view_form" model="ir.ui.view">
+    <field name="name">laporan.facebook.form</field>
+    <field name="model">laporan.facebook</field>
+    <field name="arch" type="xml">
+      <form>
+        <header>
+          <button name="action_submit" type="object" string="Submit" class="oe_highlight"
+                  invisible="status != 'draft'"/>
+          <button name="action_validate" type="object" string="Validasi" class="oe_highlight"
+                  invisible="status != 'menunggu'" groups="laporan_facebook.group_peninjau"/>
+          <button name="action_reject" type="object" string="Tolak"
+                  invisible="status != 'menunggu'" groups="laporan_facebook.group_peninjau"/>
+          <button name="action_need_info" type="object" string="Butuh Info"
+                  invisible="status != 'menunggu'" groups="laporan_facebook.group_peninjau"/>
+          <button name="action_reset_draft" type="object" string="Reset ke Draft"
+                  invisible="status not in ('tolak','info')"/>
+          <field name="status" widget="statusbar" statusbar_visible="draft,menunggu,valid,tolak"/>
+        </header>
+        <sheet>
+          <div class="oe_button_box" name="button_box">
+            <button name="action_get_riwayat" type="object" class="oe_stat_button" icon="fa-history">
+              <field name="total_bukti" string="Riwayat" widget="statinfo"/>
+            </button>
+            <button name="action_preview_portal" type="object" class="oe_stat_button" icon="fa-globe">
+              <span>Portal Preview</span>
+            </button>
+          </div>
+          <div class="oe_title">
+            <h1>
+              <field name="kode_laporan"/>
+            </h1>
+          </div>
+          <group>
+            <group>
+              <field name="pelaku_id"/>
+              <field name="link_fb"/>
+              <field name="nama_akun"/>
+              <field name="jenis_akun"/>
+            </group>
+            <group>
+              <field name="tanggal_lapor"/>
+              <field name="skor"/>
+              <field name="usia_laporan"/>
+              <field name="website_published"/>
+            </group>
+          </group>
+          <notebook>
+            <page string="Deskripsi" name="description">
+              <field name="deskripsi"/>
+            </page>
+            <page string="Bukti" name="evidence">
+              <field name="bukti_ids">
+                <list>
+                  <field name="nama_file"/>
+                  <field name="tipe_file"/>
+                  <field name="tanggal_bukti"/>
+                  <field name="deskripsi"/>
+                  <button name="action_preview" type="object" string="Preview" icon="fa-eye"/>
+                </list>
+              </field>
+            </page>
+            <page string="Tag" name="tags">
+              <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'warna'}"/>
+            </page>
+          </notebook>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <!-- List (Daftar) View -->
+  <record id="laporan_facebook_view_list" model="ir.ui.view">
+    <field name="name">laporan.facebook.list</field>
+    <field name="model">laporan.facebook</field>
+    <field name="arch" type="xml">
+      <list string="Laporan Facebook">
+        <field name="kode_laporan"/>
+        <field name="pelaku_id"/>
+        <field name="tanggal_lapor"/>
+        <field name="status" decoration-info="status == 'draft'"
+               decoration-warning="status == 'menunggu'"
+               decoration-success="status == 'valid'"
+               decoration-danger="status in ('tolak','info')"/>
+        <field name="skor"/>
+        <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'warna'}"/>
+        <field name="total_bukti"/>
+      </list>
+    </field>
+  </record>
+
+  <!-- Search View -->
+  <record id="laporan_facebook_view_search" model="ir.ui.view">
+    <field name="name">laporan.facebook.search</field>
+    <field name="model">laporan.facebook</field>
+    <field name="arch" type="xml">
+      <search>
+        <field name="kode_laporan"/>
+        <field name="pelaku_id"/>
+        <field name="deskripsi"/>
+        <field name="tag_ids"/>
+        <separator/>
+        <filter string="Draft" name="draft" domain="[('status','=','draft')]"/>
+        <filter string="Menunggu Validasi" name="menunggu" domain="[('status','=','menunggu')]"/>
+        <filter string="Tervalidasi" name="valid" domain="[('status','=','valid')]"/>
+        <filter string="Ditolak" name="tolak" domain="[('status','=','tolak')]"/>
+        <filter string="Butuh Info" name="info" domain="[('status','=','info')]"/>
+        <separator/>
+        <filter string="Dipublikasi" name="published" domain="[('website_published','=',True)]"/>
+        <group expand="0" string="Group By">
+          <filter string="Status" name="groupby_status" context="{'group_by': 'status'}"/>
+          <filter string="Pelaku" name="groupby_pelaku" context="{'group_by': 'pelaku_id'}"/>
+          <filter string="Bulan" name="groupby_month" context="{'group_by': 'tanggal_lapor:month'}"/>
+        </group>
+      </search>
+    </field>
+  </record>
+
+  <!-- Kanban View -->
+  <record id="laporan_facebook_view_kanban" model="ir.ui.view">
+    <field name="name">laporan.facebook.kanban</field>
+    <field name="model">laporan.facebook</field>
+    <field name="arch" type="xml">
+      <kanban default_group_by="status" records_draggable="false">
+        <field name="kode_laporan"/>
+        <field name="pelaku_id"/>
+        <field name="tanggal_lapor"/>
+        <field name="skor"/>
+        <field name="total_bukti"/>
+        <templates>
+          <t t-name="card">
+            <div class="oe_kanban_global_click">
+              <div class="o_kanban_record_title">
+                <strong><field name="kode_laporan"/></strong>
+              </div>
+              <div class="o_kanban_record_subtitle">
+                <field name="pelaku_id"/>
+              </div>
+              <div class="o_kanban_record_bottom row mt-2">
+                <div class="col-6">
+                  <field name="tanggal_lapor"/>
+                </div>
+                <div class="col-6 text-end">
+                  <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'warna'}"/>
+                </div>
+              </div>
+            </div>
+          </t>
+        </templates>
+      </kanban>
+    </field>
+  </record>
+
+  <!-- Action -->
+  <record id="action_laporan_facebook" model="ir.actions.act_window">
+    <field name="name">Laporan Facebook</field>
+    <field name="res_model">laporan.facebook</field>
+    <field name="view_mode">kanban,list,form</field>
+    <field name="help" type="html">
+      <p class="o_view_nocontent_smiling_face">
+        Belum ada laporan
+      </p>
+      <p>
+        Klik tombol create untuk membuat laporan baru.
+      </p>
+    </field>
+  </record>
+
+  <!-- Menu -->
+  <menuitem id="menu_laporan_facebook_root" name="Laporan FB" sequence="10"/>
+  <menuitem id="menu_laporan_facebook" name="Laporan" parent="menu_laporan_facebook_root"
+            action="action_laporan_facebook" sequence="10"/>
+</odoo>
