@@ -1,456 +1,433 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-<!-- Form Pembuatan Laporan -->
-<template id="portal_create_laporan" name="Create Laporan">
-    <t t-call="portal.portal_layout">
-        <div class="container pb-5">
-            <!-- Breadcrumb -->
-            <nav aria-label="breadcrumb" class="mb-4">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="/my/home">Portal</a></li>
-                    <li class="breadcrumb-item"><a href="/my/laporan">Laporan</a></li>
-                    <li class="breadcrumb-item active">Buat Laporan</li>
-                </ol>
-            </nav>
+  <template id="laporan_facebook.portal_create_laporan" name="Create Laporan">
+        <t t-call="portal.portal_layout">
+            <div class="container py-5">
+                <!-- Breadcrumb -->
+                <nav aria-label="breadcrumb" class="mb-4">
+                    <ol class="breadcrumb bg-light p-3 rounded">
+                        <li class="breadcrumb-item"><a href="/my/home">Portal</a></li>
+                        <li class="breadcrumb-item"><a href="/my/laporan">Laporan</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Buat Laporan</li>
+                    </ol>
+                </nav>
 
-            <!-- Alert Error -->
-            <div t-if="error and error.get('general')" class="alert alert-danger" role="alert">
-                <i class="fa fa-exclamation-triangle me-2"/>
-                <span t-esc="error.get('general')"/>
-            </div>
-
-            <!-- Form -->
-            <div class="card">
-                <div class="card-header bg-white">
-                    <h3 class="mb-0">Buat Laporan Baru</h3>
-                </div>
-                <div class="card-body">
-                    <form action="/laporan/submit" method="post" enctype="multipart/form-data" 
-                          class="needs-validation" novalidate="1">
-                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-
-                        <!-- Informasi Pelaku -->
-                        <h5 class="mb-3">Informasi Pelaku</h5>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label" for="nama_akun">Nama Akun Facebook <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="nama_akun" id="nama_akun" required="1"
-                                       t-att-class="'is-invalid' if error.get('nama_akun') else ''"
-                                       t-att-value="(post or {}).get('nama_akun', '')"/>
-                                <div t-if="error.get('nama_akun')" class="invalid-feedback" t-esc="error.get('nama_akun')"/>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label" for="link_fb">Link Facebook <span class="text-danger">*</span></label>
-                                <input type="url" class="form-control" name="link_fb" id="link_fb" required="1"
-                                       t-att-class="'is-invalid' if error.get('link_fb') else ''"
-                                       t-att-value="(post or {}).get('link_fb', '')"/>
-                                <div t-if="error.get('link_fb')" class="invalid-feedback" t-esc="error.get('link_fb')"/>
-                                <small class="text-muted">Contoh: https://facebook.com/username</small>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label" for="jenis_akun">Jenis Akun <span class="text-danger">*</span></label>
-                                <select class="form-select" name="jenis_akun" id="jenis_akun" required="1"
-                                        t-att-class="'is-invalid' if error.get('jenis_akun') else ''">
-                                    <option value="">Pilih Jenis Akun...</option>
-                                    <t t-foreach="(jenis_akun_options or {}).items()" t-as="opt">
-                                        <option t-att-value="opt[0]" t-att-selected="(post or {}).get('jenis_akun') == opt[0]">
-                                            <t t-esc="opt[1]"/>
-                                        </option>
-                                    </t>
-                                </select>
-                                <div t-if="error.get('jenis_akun')" class="invalid-feedback" t-esc="error.get('jenis_akun')"/>
-                            </div>
-                        </div>
-
-                        <!-- Deskripsi -->
-                        <h5 class="mb-3 mt-4">Deskripsi Kejadian</h5>
-                        <div class="mb-3">
-                            <label class="form-label" for="deskripsi">Uraian Detail <span class="text-danger">*</span></label>
-                            <textarea class="form-control" name="deskripsi" id="deskripsi" rows="5" required="1"
-                                      t-att-class="'is-invalid' if error.get('deskripsi') else ''"
-                                      placeholder="Jelaskan secara detail kronologi kejadian..."><t t-esc="(post or {}).get('deskripsi', '')"/></textarea>
-                            <div t-if="error.get('deskripsi')" class="invalid-feedback" t-esc="error.get('deskripsi')"/>
-                            <small class="text-muted">Minimal 20 karakter</small>
-                        </div>
-
-                        <!-- Tag -->
-                        <h5 class="mb-3 mt-4">Kategori &amp; Tag</h5>
-                        <div class="mb-3">
-                            <label class="form-label">Tag Terkait <span class="text-danger">*</span></label>
-                            <div class="row">
-                                <t t-foreach="kategori" t-as="kat">
-                                    <div class="col-12 mb-2">
-                                        <strong t-esc="kat.nama"/>
-                                        <div class="d-flex flex-wrap gap-2">
-                                            <t t-foreach="kat.tag_ids" t-as="tag">
-                                                <div class="form-check">
-                                                    <input type="checkbox" class="form-check-input" 
-                                                           t-att-name="'tag_ids'" t-att-value="tag.id"
-                                                           t-att-checked="tag.id in selected_tags if selected_tags else False"
-                                                           t-att-id="'tag_%s' % tag.id"/>
-                                                    <label class="form-check-label" t-att-for="'tag_%s' % tag.id">
-                                                        <t t-esc="tag.nama"/>
-                                                    </label>
-                                                </div>
-                                            </t>
-                                        </div>
-                                    </div>
-                                </t>
-                            </div>
-                            <div t-if="error.get('tag_ids')" class="text-danger" t-esc="error.get('tag_ids')"/>
-                        </div>
-
-                        <!-- Bukti -->
-                        <h5 class="mb-3 mt-4">Bukti Pendukung</h5>
-                        <div class="mb-3">
-                            <label class="form-label" for="bukti">Upload Bukti <span class="text-danger">*</span></label>
-                            <input type="file" class="form-control" name="bukti" id="bukti" multiple="true" required="1"
-                                   accept=".jpg,.jpeg,.png,.pdf,.doc,.docx"
-                                   t-att-class="'is-invalid' if error.get('bukti') else ''"/>
-                            <div t-if="error.get('bukti')" class="invalid-feedback" t-esc="error.get('bukti')"/>
-                            <small class="form-text text-muted">
-                                <ul class="mb-0">
-                                    <li>Format yang didukung: JPG, PNG, PDF, DOC</li>
-                                    <li>Maksimal 10MB per file</li>
-                                    <li>Minimal 1 bukti</li>
-                                </ul>
-                            </small>
-                        </div>
-
-                        <!-- Preview Area -->
-                        <div id="preview-area" class="mb-3 d-none">
-                            <h6>Preview File</h6>
-                            <div id="file-preview" class="row g-2"></div>
-                        </div>
-
-                        <!-- Submit -->
-                        <div class="d-flex justify-content-end gap-2 mt-4">
-                            <a href="/my/laporan" class="btn btn-secondary">
-                                <i class="fa fa-times me-1"/>Batal
-                            </a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fa fa-check me-1"/>Submit Laporan
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- JS untuk preview file & validasi -->
-        <script type="text/javascript">
-            document.addEventListener('DOMContentLoaded', function() {
-                // File preview
-                const input = document.getElementById('bukti');
-                const previewArea = document.getElementById('preview-area');
-                const preview = document.getElementById('file-preview');
-                
-                input.addEventListener('change', function() {
-                    preview.innerHTML = '';
-                    let hasFiles = false;
-                    
-                    Array.from(this.files).forEach(file => {
-                        hasFiles = true;
-                        const div = document.createElement('div');
-                        div.className = 'col-md-4';
-                        
-                        const card = document.createElement('div');
-                        card.className = 'card h-100';
-                        
-                        const body = document.createElement('div');
-                        body.className = 'card-body';
-                        
-                        // Preview untuk gambar
-                        if (file.type.startsWith('image/')) {
-                            const img = document.createElement('img');
-                            img.className = 'img-fluid mb-2';
-                            img.src = URL.createObjectURL(file);
-                            body.appendChild(img);
-                        } else {
-                            const icon = document.createElement('i');
-                            icon.className = 'fa fa-file fa-3x mb-2';
-                            body.appendChild(icon);
-                        }
-                        
-                        const name = document.createElement('p');
-                        name.className = 'mb-0';
-                        name.textContent = file.name;
-                        body.appendChild(name);
-                        
-                        const size = document.createElement('small');
-                        size.className = 'text-muted';
-                        size.textContent = Math.round(file.size / 1024) + ' KB';
-                        body.appendChild(size);
-                        
-                        card.appendChild(body);
-                        div.appendChild(card);
-                        preview.appendChild(div);
-                    });
-                    
-                    previewArea.classList.toggle('d-none', !hasFiles);
-                });
-                
-                // Form validation
-                const form = document.querySelector('form');
-                form.addEventListener('submit', function(event) {
-                    if (!form.checkValidity()) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                    }
-                    form.classList.add('was-validated');
-                    
-                    // Validasi tag
-                    const tags = document.querySelectorAll('input[name="tag_ids"]:checked');
-                    if (tags.length === 0) {
-                        event.preventDefault();
-                        const tagError = document.createElement('div');
-                        tagError.className = 'text-danger mt-2';
-                        tagError.textContent = 'Pilih minimal 1 tag';
-                        document.querySelector('.tag-section').appendChild(tagError);
-                    }
-                });
-            });
-        </script>
-    </t>
-</template>
-
-<!-- Halaman Pencarian -->
-<template id="portal_search_laporan" name="Search Laporan">
-    <t t-call="website.layout">
-        <div class="container py-5">
-            <!-- Header -->
-            <div class="row mb-4">
-                <div class="col-12 text-center">
-                    <h1 class="display-4">Cari Laporan</h1>
-                    <p class="lead">Cari laporan akun Facebook yang telah divalidasi</p>
-                </div>
-            </div>
-
-            <!-- Search Form -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <form action="/laporan/search" method="get" class="row g-3">
-                        <!-- Search input -->
-                        <div class="col-md-6">
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fa fa-search"/></span>
-                                <input type="text" name="search" class="form-control" 
-                                       placeholder="Cari berdasarkan nama akun, link, atau kode laporan..."
-                                       t-att-value="search"/>
-                            </div>
-                        </div>
-
-                        <!-- Date range -->
-                        <div class="col-md-4">
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fa fa-calendar"/></span>
-                                <input type="date" name="date_from" class="form-control" 
-                                       t-att-value="date_from" placeholder="Dari Tanggal"/>
-                                <input type="date" name="date_to" class="form-control" 
-                                       t-att-value="date_to" placeholder="Sampai Tanggal"/>
-                            </div>
-                        </div>
-
-                        <!-- Submit -->
-                        <div class="col-md-2">
-                            <button type="submit" class="btn btn-primary w-100">
-                                <i class="fa fa-search me-1"/>Cari
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Filter &amp; Sort -->
-            <div class="row mb-4">
-                <!-- Kategori filter -->
-                <div class="col-md-8">
-                    <div class="d-flex flex-wrap gap-2">
-                        <a href="/laporan/search" t-attf-class="btn btn-sm #{'' if selected_kategori_id else 'btn-primary'}">
-                            Semua
-                        </a>
-                        <t t-foreach="kategori" t-as="kat">
-                            <a t-att-href="'/laporan/search?kategori_id=%s%s' % (kat.id, '&amp;search=%s' % search if search else '')"
-                               t-attf-class="btn btn-sm #{'' if selected_kategori_id != kat.id else 'btn-primary'}">
-                                <t t-esc="kat.nama"/>
-                                <span class="badge bg-light text-dark ms-1" t-esc="kat.total_laporan_count"/>
-                            </a>
-                        </t>
-                    </div>
-                </div>
-
-                <!-- Sorting -->
-                <div class="col-md-4 text-end">
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-outline-secondary dropdown-toggle" 
-                                data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fa fa-sort me-1"/>
-                            Urutkan: <t t-esc="sort_options.get(sortby, sort_options['date'])['label']"/>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <t t-foreach="sort_options.items()" t-as="opt">
-                                <li>
-                                    <a t-att-href="'%s?sortby=%s%s%s' % (
-                                        default_url,
-                                        opt[0],
-                                        '&amp;search=%s' % search if search else '',
-                                        '&amp;kategori_id=%s' % selected_kategori_id if selected_kategori_id else ''
-                                    )" class="dropdown-item" t-att-class="{'active': sortby == opt[0]}">
-                                        <t t-esc="opt[1]['label']"/>
-                                    </a>
-                                </li>
-                            </t>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Results -->
-            <div class="row">
-                <!-- Counter -->
-                <div class="col-12 mb-3">
-                    <p class="text-muted">
-                        Menampilkan <t t-esc="len(laporan)"/> dari <t t-esc="total_count"/> laporan
-                        <t t-if="search">
-                            untuk pencarian "<strong t-esc="search"/>"
-                        </t>
-                    </p>
-                </div>
-
-                <!-- No Results -->
-                <div t-if="not laporan" class="col-12">
-                    <div class="alert alert-info">
-                        <i class="fa fa-info-circle me-2"/>
-                        Tidak ditemukan laporan yang sesuai dengan kriteria pencarian.
-                        <t t-if="search or selected_kategori_id">
-                            <br/>
-                            <a href="/laporan/search" class="alert-link">Hapus semua filter</a>
-                        </t>
-                    </div>
-                </div>
-
-                <!-- Results Grid -->
-                <t t-if="laporan">
-                    <div t-foreach="laporan" t-as="lap" class="col-md-6 col-lg-4 mb-4">
-                        <div class="card h-100 shadow-sm">
-                            <div class="card-body">
-                                <!-- Header -->
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <h5 class="card-title mb-0">
-                                        <a t-att-href="'/laporan/%s' % lap.id" class="text-decoration-none">
-                                            <t t-esc="lap.nama_akun"/>
-                                        </a>
-                                    </h5>
-                                    <span class="badge bg-primary" t-esc="lap.kode_laporan"/>
-                                </div>
-
-                                <!-- Meta -->
-                                <p class="card-text text-muted small mb-2">
-                                    <i class="fa fa-calendar me-1"/>
-                                    <t t-esc="lap.tanggal_lapor" t-options="{'widget': 'datetime', 'format': 'dd MMM yyyy'}"/>
-                                    <span class="mx-2">·</span>
-                                    <i class="fa fa-eye me-1"/>
-                                </p>
-
-                                <!-- Description -->
-                                <p class="card-text mb-3">
-                                    <t t-if="len(lap.deskripsi) > 150">
-                                        <t t-esc="lap.deskripsi[:150] + '...'"/>
-                                    </t>
-                                    <t t-else="">
-                                        <t t-esc="lap.deskripsi"/>
-                                    </t>
-                                </p>
-
-                                <!-- Tags -->
-                                <div class="mb-3">
-                                    <t t-foreach="lap.tag_ids" t-as="tag">
-                                        <span t-attf-class="badge me-1 bg-#{tag.warna if tag.warna else 'secondary'}">
-                                            <t t-esc="tag.nama"/>
-                                        </span>
-                                    </t>
-                                </div>
-
-                                <!-- Link -->
-                                <a t-att-href="'/laporan/%s' % lap.id" class="btn btn-sm btn-outline-primary">
-                                    Lihat Detail <i class="fa fa-arrow-right ms-1"/>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Pagination -->
-                    <div class="col-12">
-                        <t t-call="portal.pager"/>
+                <!-- Alert Error -->
+                <t t-if="error and error.get('general')">
+                    <div class="alert alert-danger d-flex align-items-center" role="alert">
+                        <i class="fa fa-exclamation-triangle me-2"></i>
+                        <span t-esc="error.get('general')"></span>
                     </div>
                 </t>
-            </div>
-        </div>
-    </t>
-</template>
-<!-- Daftar Laporan di Portal -->
-<template id="portal_my_laporan" name="My Laporan List" inherit_id="portal.portal_my_home">
-    <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
-        <t t-if="laporan_count" t-call="portal.portal_docs_entry">
-            <t t-set="title">Laporan Facebook</t>
-            <t t-set="url" t-value="'/my/laporan'"/>
-            <t t-set="placeholder_count" t-value="laporan_count"/>
-        </t>
-    </xpath>
-</template>
 
-<!-- Konten Halaman Daftar Laporan -->
-<template id="portal_my_laporan_list" name="My Laporan Content">
-    <t t-call="portal.portal_layout">
-        <t t-set="breadcrumbs_searchbar" t-value="True"/>
+                <!-- Form -->
+                <div class="card shadow-lg border-0 rounded-lg">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="mb-0">Buat Laporan Baru</h3>
+                    </div>
+                    <div class="card-body">
+                        <form action="/laporan/submit" method="post" enctype="multipart/form-data" class="needs-validation" novalidate="novalidate">
+                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
 
-        <t t-call="portal.portal_searchbar">
-            <t t-set="title">Laporan Facebook</t>
-        </t>
-        <t t-if="not laporan">
-            <div class="alert alert-warning mt8" role="alert">
-                Belum ada laporan.
-            </div>
-        </t>
-        <t t-if="laporan">
-            <div class="card">
-                <div class="card-body">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Kode</th>
-                                <th>Tanggal</th>
-                                <th>Pelaku</th>
-                                <th>Status</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr t-foreach="laporan" t-as="lap">
-                                <td><span t-field="lap.kode_laporan"/></td>
-                                <td><span t-field="lap.tanggal_lapor"/></td>
-                                <td><span t-field="lap.pelaku_id.name"/></td>
-                                <td>
-                                    <span t-field="lap.status" class="badge" 
-                                          t-attf-class="badge-#{lap.status == 'valid' and 'success' or (lap.status == 'menunggu' and 'warning' or 'danger')}"/>
-                                </td>
-                                <td class="text-right">
-                                    <a t-attf-href="/my/laporan/#{lap.id}" class="btn btn-sm btn-secondary">
-                                        View
-                                    </a>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                            <!-- Informasi Pelaku -->
+                            <h5 class="mb-3 text-primary">Informasi Pelaku</h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold" for="nama_akun">Nama Akun Facebook <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="nama_akun" id="nama_akun" required="required" 
+                                           t-att-class="'is-invalid' if error.get('nama_akun') else ''"
+                                           t-att-value="(post or {}).get('nama_akun', '')"/>
+                                    <div t-if="error.get('nama_akun')" class="invalid-feedback" t-esc="error.get('nama_akun')"/>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold" for="link_fb">Link Facebook <span class="text-danger">*</span></label>
+                                    <input type="url" class="form-control" name="link_fb" id="link_fb" required="required"
+                                           t-att-class="'is-invalid' if error.get('link_fb') else ''"
+                                           t-att-value="(post or {}).get('link_fb', '')"/>
+                                    <div t-if="error.get('link_fb')" class="invalid-feedback" t-esc="error.get('link_fb')"/>
+                                    <small class="text-muted">Contoh: https://facebook.com/username</small>
+                                </div>
+                            </div>
+
+                            <!-- Deskripsi -->
+                            <h5 class="mt-4 text-primary">Deskripsi Kejadian</h5>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold" for="deskripsi">Uraian Detail <span class="text-danger">*</span></label>
+                                <textarea class="form-control" name="deskripsi" id="deskripsi" rows="5" required="required"
+                                          t-att-class="'is-invalid' if error.get('deskripsi') else ''"
+                                          placeholder="Jelaskan secara detail kronologi kejadian..."><t t-esc="(post or {}).get('deskripsi', '')"/></textarea>
+                                <div t-if="error.get('deskripsi')" class="invalid-feedback" t-esc="error.get('deskripsi')"/>
+                                <small class="text-muted">Minimal 20 karakter</small>
+                            </div>
+
+                            <!-- Bukti -->
+                            <h5 class="mt-4 text-primary">Bukti Pendukung</h5>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold" for="bukti">Upload Bukti <span class="text-danger">*</span></label>
+                                <input type="file" class="form-control" name="bukti" id="bukti" multiple="multiple" required="required"
+                                       accept=".jpg,.jpeg,.png,.pdf,.doc,.docx"
+                                       t-att-class="'is-invalid' if error.get('bukti') else ''"/>
+                                <div t-if="error.get('bukti')" class="invalid-feedback" t-esc="error.get('bukti')"/>
+                                <small class="form-text text-muted">Format yang didukung: JPG, PNG, PDF, DOC. Maksimal 10MB per file.</small>
+                                
+                                <!-- Preview Area -->
+                                <div id="preview-area" class="mt-3">
+                                    <h6>Preview File</h6>
+                                    <div id="file-preview" class="row g-2"></div>
+                                </div>
+                            </div>
+
+                            <!-- Submit -->
+                            <div class="d-flex justify-content-end gap-3 mt-4">
+                                <a href="/my/laporan" class="btn btn-secondary px-4">Batal</a>
+                                <button type="submit" class="btn btn-primary px-4">Submit Laporan</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
-            <div class="o_portal_pager mt-3">
-                <t t-call="portal.pager"/>
-            </div>
+
+            <script type="text/javascript">
+                document.addEventListener('DOMContentLoaded', function() {
+                    const input = document.getElementById('bukti');
+                    const previewArea = document.getElementById('preview-area');
+                    const preview = document.getElementById('file-preview');
+
+                    input.addEventListener('change', function() {
+                        preview.innerHTML = '';
+                        Array.from(this.files).forEach(file => {
+                            const div = document.createElement('div');
+                            div.className = 'col-md-3';
+                            const card = document.createElement('div');
+                            card.className = 'card h-100';
+                            const body = document.createElement('div');
+                            body.className = 'card-body';
+                            if (file.type.startsWith('image/')) {
+                                const img = document.createElement('img');
+                                img.className = 'img-fluid';
+                                img.src = URL.createObjectURL(file);
+                                body.appendChild(img);
+                            } else {
+                                const icon = document.createElement('i');
+                                icon.className = 'fa fa-file fa-3x';
+                                body.appendChild(icon);
+                            }
+                            card.appendChild(body);
+                            div.appendChild(card);
+                            preview.appendChild(div);
+                        });
+                    });
+                });
+            </script>
         </t>
-    </t>
-</template>
+    </template>
+  
+  <!-- Halaman Pencarian -->
+  <template id="laporan_facebook.portal_search_laporan" name="Search Laporan">
+      <t t-call="website.layout">
+          <div class="container py-5">
+              <!-- Header -->
+              <div class="row mb-4">
+                  <div class="col-12 text-center">
+                      <h1 class="display-4">Cari Laporan</h1>
+                      <p class="lead">Cari laporan akun Facebook yang telah divalidasi</p>
+                  </div>
+              </div>
+  
+              <!-- Search Form -->
+              <div class="card mb-4">
+                  <div class="card-body">
+                      <form action="/laporan/search" method="get" class="row g-3">
+                          <!-- Search input -->
+                          <div class="col-md-6">
+                              <div class="input-group">
+                                  <span class="input-group-text"><i class="fa fa-search"/></span>
+                                  <input type="text" name="search" class="form-control" 
+                                         placeholder="Cari berdasarkan nama akun, link, atau kode laporan..."
+                                         t-att-value="search"/>
+                              </div>
+                          </div>
+  
+                          <!-- Date range -->
+                          <div class="col-md-4">
+                              <div class="input-group">
+                                  <span class="input-group-text"><i class="fa fa-calendar"/></span>
+                                  <input type="date" name="date_from" class="form-control" 
+                                         t-att-value="date_from" placeholder="Dari Tanggal"/>
+                                  <input type="date" name="date_to" class="form-control" 
+                                         t-att-value="date_to" placeholder="Sampai Tanggal"/>
+                              </div>
+                          </div>
+  
+                          <!-- Submit -->
+                          <div class="col-md-2">
+                              <button type="submit" class="btn btn-primary w-100">
+                                  <i class="fa fa-search me-1"/>Cari
+                              </button>
+                          </div>
+                      </form>
+                  </div>
+              </div>
+  
+              <!-- Filter &amp; Sort -->
+              <div class="row mb-4">
+                  <!-- Kategori filter -->
+                  <div class="col-md-8">
+                      <div class="d-flex flex-wrap gap-2">
+                          <a href="/laporan/search" t-attf-class="btn btn-sm #{'' if selected_kategori_id else 'btn-primary'}">
+                              Semua
+                          </a>
+                          <t t-foreach="kategori" t-as="kat">
+                              <a t-att-href="'/laporan/search?kategori_id=%s%s' % (kat.id, '&amp;search=%s' % search if search else '')"
+                                 t-attf-class="btn btn-sm #{'' if selected_kategori_id != kat.id else 'btn-primary'}">
+                                  <t t-esc="kat.nama"/>
+                                  <span class="badge bg-light text-dark ms-1" t-esc="kat.total_laporan_count"/>
+                              </a>
+                          </t>
+                      </div>
+                  </div>
+  
+                  <!-- Sorting -->
+                  <div class="col-md-4 text-end">
+                      <div class="btn-group">
+                          <button type="button" class="btn btn-outline-secondary dropdown-toggle" 
+                                  data-bs-toggle="dropdown" aria-expanded="false">
+                              <i class="fa fa-sort me-1"/>
+                              Urutkan: <t t-esc="sort_options.get(sortby, sort_options['date'])['label']"/>
+                          </button>
+                          <ul class="dropdown-menu dropdown-menu-end">
+                              <t t-foreach="sort_options.items()" t-as="opt">
+                                  <li>
+                                      <a t-att-href="'%s?sortby=%s%s%s' % (
+                                          default_url,
+                                          opt[0],
+                                          '&amp;search=%s' % search if search else '',
+                                          '&amp;kategori_id=%s' % selected_kategori_id if selected_kategori_id else ''
+                                      )" class="dropdown-item" t-att-class="{'active': sortby == opt[0]}">
+                                          <t t-esc="opt[1]['label']"/>
+                                      </a>
+                                  </li>
+                              </t>
+                          </ul>
+                      </div>
+                  </div>
+              </div>
+  
+              <!-- Results -->
+              <div class="row">
+                  <!-- Counter -->
+                  <div class="col-12 mb-3">
+                      <p class="text-muted">
+                          Menampilkan <t t-esc="len(laporan)"/> dari <t t-esc="total_count"/> laporan
+                          <t t-if="search">
+                              untuk pencarian "<strong t-esc="search"/>"
+                          </t>
+                      </p>
+                  </div>
+  
+                  <!-- No Results -->
+                  <div t-if="not laporan" class="col-12">
+                      <div class="alert alert-info">
+                          <i class="fa fa-info-circle me-2"/>
+                          Tidak ditemukan laporan yang sesuai dengan kriteria pencarian.
+                          <t t-if="search or selected_kategori_id">
+                              <br/>
+                              <a href="/laporan/search" class="alert-link">Hapus semua filter</a>
+                          </t>
+                      </div>
+                  </div>
+  
+                  <!-- Results Grid -->
+                  <t t-if="laporan">
+                      <div t-foreach="laporan" t-as="lap" class="col-md-6 col-lg-4 mb-4">
+                          <div class="card h-100 shadow-sm">
+                              <div class="card-body">
+                                  <!-- Header -->
+                                  <div class="d-flex justify-content-between align-items-start mb-2">
+                                      <h5 class="card-title mb-0">
+                                          <a t-att-href="'/laporan/%s' % lap.id" class="text-decoration-none">
+                                              <t t-esc="lap.nama_akun"/>
+                                          </a>
+                                      </h5>
+                                      <span class="badge bg-primary" t-esc="lap.kode_laporan"/>
+                                  </div>
+  
+                                  <!-- Meta -->
+                                  <p class="card-text text-muted small mb-2">
+                                      <i class="fa fa-calendar me-1"/>
+                                      <t t-esc="lap.tanggal_lapor" t-options="{'widget': 'datetime', 'format': 'dd MMM yyyy'}"/>
+                                      <span class="mx-2">·</span>
+                                      <i class="fa fa-eye me-1"/>
+                                  </p>
+  
+                                  <!-- Description -->
+                                  <p class="card-text mb-3">
+                                      <t t-if="len(lap.deskripsi) > 150">
+                                          <t t-esc="lap.deskripsi[:150] + '...'"/>
+                                      </t>
+                                      <t t-else="">
+                                          <t t-esc="lap.deskripsi"/>
+                                      </t>
+                                  </p>
+  
+                                  <!-- Tags -->
+                                  <div class="mb-3">
+                                      <t t-foreach="lap.tag_ids" t-as="tag">
+                                          <span t-attf-class="badge me-1 bg-#{tag.warna if tag.warna else 'secondary'}">
+                                              <t t-esc="tag.nama"/>
+                                          </span>
+                                      </t>
+                                  </div>
+  
+                                  <!-- Link -->
+                                  <a t-att-href="'/laporan/%s' % lap.id" class="btn btn-sm btn-outline-primary">
+                                      Lihat Detail <i class="fa fa-arrow-right ms-1"/>
+                                  </a>
+                              </div>
+                          </div>
+                      </div>
+  
+                      <!-- Pagination -->
+                      <div class="col-12">
+                          <t t-call="portal.pager"/>
+                      </div>
+                  </t>
+              </div>
+          </div>
+      </t>
+  </template>
+  
+  <!-- Daftar Laporan di Portal (Portal Home) -->
+  <template id="laporan_facebook.portal_my_laporan" name="My Laporan List" inherit_id="portal.portal_my_home">
+      <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+          <t t-if="laporan_count" t-call="portal.portal_docs_entry">
+              <t t-set="title">Laporan Facebook</t>
+              <t t-set="url" t-value="'/my/laporan'"/>
+              <t t-set="placeholder_count" t-value="laporan_count"/>
+          </t>
+      </xpath>
+  </template>
+  
+  <!-- Konten Halaman Daftar Laporan -->
+  <template id="laporan_facebook.portal_my_laporan_list" name="My Laporan Content">
+      <t t-call="portal.portal_layout">
+          <t t-set="breadcrumbs_searchbar" t-value="True"/>
+  
+          <t t-call="portal.portal_searchbar">
+              <t t-set="title">Laporan Facebook</t>
+          </t>
+          <t t-if="not laporan">
+              <div class="alert alert-warning mt8" role="alert">
+                  Belum ada laporan.
+              </div>
+          </t>
+          <t t-if="laporan">
+              <div class="card">
+                  <div class="card-body">
+                      <table class="table">
+                          <thead>
+                              <tr>
+                                  <th>Kode</th>
+                                  <th>Tanggal</th>
+                                  <th>Pelaku</th>
+                                  <th>Status</th>
+                                  <th></th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                              <tr t-foreach="laporan" t-as="lap">
+                                  <td><span t-field="lap.kode_laporan"/></td>
+                                  <td><span t-field="lap.tanggal_lapor"/></td>
+                                  <td><span t-field="lap.pelaku_id.name"/></td>
+                                  <td>
+                                      <span t-field="lap.status" class="badge" 
+                                            t-attf-class="badge-#{lap.status == 'valid' and 'success' or (lap.status == 'menunggu' and 'warning' or 'danger')}"/>
+                                  </td>
+                                  <td class="text-right">
+                                      <a t-attf-href="/my/laporan/#{lap.id}" class="btn btn-sm btn-secondary">
+                                          View
+                                      </a>
+                                  </td>
+                              </tr>
+                          </tbody>
+                      </table>
+                  </div>
+              </div>
+              <div class="o_portal_pager mt-3">
+                  <t t-call="portal.pager"/>
+              </div>
+          </t>
+      </t>
+  </template>
+  
+  <!-- Detail Laporan -->
+  <template id="laporan_facebook.portal_laporan_detail" name="Laporan Detail">
+      <t t-call="portal.portal_layout">
+          <div class="container py-5">
+              <!-- Breadcrumb -->
+              <nav aria-label="breadcrumb" class="mb-4">
+                  <ol class="breadcrumb">
+                      <li class="breadcrumb-item"><a href="/my/home">Portal</a></li>
+                      <li class="breadcrumb-item"><a href="/laporan/search">Laporan</a></li>
+                      <li class="breadcrumb-item active">Detail Laporan</li>
+                  </ol>
+              </nav>
+              <!-- Detail Laporan -->
+              <div class="card mb-4">
+                  <div class="card-header">
+                      <h3 class="card-title" t-esc="laporan.nama_akun"/>
+                  </div>
+                  <div class="card-body">
+                      <p><strong>Kode Laporan:</strong> <span t-esc="laporan.kode_laporan"/></p>
+                      <p><strong>Tanggal Lapor:</strong> <span t-field="laporan.tanggal_lapor" t-options="{'widget': 'datetime', 'format': 'dd MMM yyyy'}"/></p>
+                      <p><strong>Deskripsi:</strong></p>
+                      <p t-esc="laporan.deskripsi"/>
+                      <div class="mt-4">
+                          <h5>Bukti Pendukung</h5>
+                          <div class="row">
+                              <t t-foreach="bukti_by_type.get('image')" t-as="bukti">
+                                  <div class="col-md-4 mb-3">
+                                      <a t-att-href="'/web/content/laporan.bukti/%s/lampiran/%s' % (bukti.id, bukti.nama_file)" target="_blank">
+                                          <img t-att-src="'/web/content/laporan.bukti/%s/lampiran/%s' % (bukti.id, bukti.nama_file)" class="img-fluid"/>
+                                      </a>
+                                  </div>
+                              </t>
+                              <t t-foreach="bukti_by_type.get('document')" t-as="bukti">
+                                  <div class="col-md-4 mb-3">
+                                      <a t-att-href="'/web/content/laporan.bukti/%s/lampiran/%s' % (bukti.id, bukti.nama_file)" target="_blank">
+                                          <i class="fa fa-file fa-3x"></i>
+                                          <p t-esc="bukti.nama_file"/>
+                                      </a>
+                                  </div>
+                              </t>
+                              <!-- Tampilkan tipe lainnya jika diperlukan -->
+                          </div>
+                      </div>
+                  </div>
+              </div>
+              <!-- Laporan Terkait -->
+              <div class="mt-5">
+                  <h4>Laporan Terkait</h4>
+                  <div class="row">
+                      <t t-foreach="related_laporan" t-as="lap">
+                          <div class="col-md-4 mb-3">
+                              <div class="card h-100">
+                                  <div class="card-body">
+                                      <h5 class="card-title">
+                                          <a t-att-href="'/laporan/%s' % lap.id" class="text-decoration-none">
+                                              <t t-esc="lap.nama_akun"/>
+                                          </a>
+                                      </h5>
+                                      <p class="card-text">
+                                          <t t-esc="lap.deskripsi[:100] + '...' if len(lap.deskripsi) > 100 else lap.deskripsi"/>
+                                      </p>
+                                  </div>
+                              </div>
+                          </div>
+                      </t>
+                  </div>
+              </div>
+          </div>
+      </t>
+  </template>
 </odoo>

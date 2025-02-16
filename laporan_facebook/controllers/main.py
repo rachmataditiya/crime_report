@@ -1,18 +1,17 @@
-from odoo import http, fields
+from odoo import http
 from odoo.http import request
 from odoo.addons.portal.controllers.portal import CustomerPortal, pager as portal_pager
-from odoo.exceptions import ValidationError, AccessError
+from odoo.exceptions import ValidationError
 import base64
 import logging
 import json
-from datetime import datetime
 import mimetypes
-import math
 
 _logger = logging.getLogger(__name__)
 
 class LaporanPortal(CustomerPortal):
-    
+    _items_per_page = 10
+
     def _prepare_home_portal_values(self, counters):
         """Menambahkan counter laporan ke portal home"""
         values = super()._prepare_home_portal_values(counters)
@@ -32,7 +31,7 @@ class LaporanPortal(CustomerPortal):
             elif mime_type.startswith('video/'):
                 return 'video'
             elif mime_type in ['application/pdf', 'application/msword', 
-                             'application/vnd.openxmlformats-officedocument.wordprocessingml.document']:
+                               'application/vnd.openxmlformats-officedocument.wordprocessingml.document']:
                 return 'document'
         return 'document'
 
@@ -405,13 +404,17 @@ class LaporanPortal(CustomerPortal):
             if not bukti.laporan_id.website_published or bukti.laporan_id.status != 'valid':
                 return request.not_found()
 
-            # Return file content
-            return http.send_file(
-                io.BytesIO(base64.b64decode(bukti.lampiran)),
-                filename=filename,
-                mimetype=bukti.file_mimetype
-            )
+            # Decode file content
+            file_content = base64.b64decode(bukti.lampiran)
+            mimetype = mimetypes.guess_type(filename)[0] or 'application/octet-stream'
 
+            headers = [
+                ('Content-Type', mimetype),
+                ('Content-Disposition', f'attachment; filename="{filename}"')
+            ]
+
+            return request.make_response(file_content, headers)
+        
         except Exception as e:
             _logger.error("Error serving bukti file: %s", str(e))
             return request.not_found()
